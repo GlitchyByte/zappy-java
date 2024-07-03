@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# Copyright 2024 GlitchyByte
+# SPDX-License-Identifier: MIT-0
+
+# Builds zappy.
+
+# [Setup]
+set -u # Exit with an error if a variable is used without being set.
+# Capture caller directory and script directory.
+readonly calling_dir="${PWD}"
+readonly script_dir="$(cd "$(dirname "$0")" && pwd)"
+# Go to script directory and load utilities.
+cd "${script_dir}"
+. ./_gcolors
+
+# [Main]
+# Clean, build, and run tests.
+cd "${script_dir}/code"
+./gradlew clean test build javadoc
+if test $? -ne 0; then
+  echoerr "Failure!"
+  cd "${calling_dir}"
+  exit 1
+fi
+
+# [Teardown]
+cd "${calling_dir}"

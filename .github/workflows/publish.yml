@@ -1,0 +1,144 @@
+name: zappy-publisher
+run-name: Publishing zappy library
+on:
+  workflow_dispatch:
+env:
+  # GRADLE_JAVA_VERSION: 17
+  JAVA_VERSION: 21
+  GRADLE_VERSION: 8.8
+  PROJECT_NAME: zappy
+  VERSION_FILE_PATH: ${{ github.workspace }}/version
+jobs:
+  sanity_check:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Get version
+        id: version
+        run: |
+          version="v$(head -n 1 ${{ env.VERSION_FILE_PATH }})"
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+
+      - name: Stable test
+        working-directory: code
+        run: |
+          if [[ "${{ github.ref_name }}" != "main" ]]; then
+            echo "Stable releases are only allowed on main branch!"
+            exit 1
+          fi
+          if [[ "${{ steps.version.outputs.version }}" == *"-SNAPSHOT" ]]; then
+            echo "Only stable releases are allowed on main branch!"
+            exit 1
+          fi
+
+  stable_package:
+    needs: sanity_check
+    permissions:
+      packages: write # Packages.
+      id-token: write # Pages.
+      pages: write    # Pages.
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      # - name: Setup Java for Gradle
+      #   uses: oracle-actions/setup-java@v1
+      #   with:
+      #     release: ${{ env.GRADLE_JAVA_VERSION }}
+
+      - name: Setup Java
+        uses: oracle-actions/setup-java@v1
+        with:
+          release: ${{ env.JAVA_VERSION }}
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: ${{ env.GRADLE_VERSION }}
+
+      - name: Test
+        working-directory: code
+        run: gradle :${{ env.PROJECT_NAME }}:test
+
+      - name: Build
+        working-directory: code
+        run: gradle :${{ env.PROJECT_NAME }}:build
+
+      - name: Recreate GPG keys
+        run: echo "${{ secrets.GPG_KEYS_BASE64 }}" | base64 -d > "${{ github.workspace }}/gpg-keys"
+
+      - name: Publish
+        working-directory: code
+        run: |
+          gradle \
+            "-Pgpr.username=${{ github.actor }}" \
+            "-Pgpr.token=${{ secrets.GITHUB_TOKEN }}" \
+            "-Psigning.keyId=${{ secrets.GPG_KEY_ID }}" \
+            "-Psigning.password=${{ secrets.GPG_PASSWORD }}" \
+            "-Psigning.secretKeyRingFile=${{ github.workspace }}/gpg-keys" \
+            :${{ env.PROJECT_NAME }}:publish
+
+      - name: Clean up old packages
+        uses: actions/delete-package-versions@v5
+        with:
+          package-name: com.glitchybyte.zappy.zappy
+          package-type: maven
+          min-versions-to-keep: 10
+
+      - name: Replace fonts in javadoc
+        working-directory: code
+        run: |
+          sed -i -E \
+            -e "s|^@import url\(.*\);|@import url('https://fonts.googleapis.com/css2?family=Exo+2\&family=JetBrains+Mono\&display=swap');|" \
+            -e "s/'DejaVu (Sans|Serif)'/'Exo 2'/" \
+            -e "s/'DejaVu Sans Mono'/'JetBrains Mono'/" \
+            "${{ env.PROJECT_NAME }}/build/docs/javadoc/stylesheet.css"
+
+      - name: Prepare Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: code/${{ env.PROJECT_NAME }}/build/docs/javadoc
+
+      - name: Deploy Pages
+        uses: actions/deploy-pages@v4
+
+  create_release:
+    needs: [ sanity_check, stable_package ]
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ needs.sanity_check.outputs.version }}
+      GH_TOKEN: ${{ github.token }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Delete version if it exists
+        run: gh release delete ${{ steps.version.outputs.version }} --cleanup-tag -y || true
+
+      - name: Delay between delete and create
+        run: sleep 2
+
+      - name: Create release
+        run: gh release create ${{ env.VERSION }} -t "${{ env.VERSION }}" -F release.md
+
+      - name: Keep 10 releases
+        run: |
+          releases=$(gh release list)
+          releaseCount=$(echo "$releases" | wc -l)
+          keep=10
+          if [ "$releaseCount" -gt "$keep" ]; then
+            extra=$((releaseCount - keep))
+            tags=$(echo "$releases" | tail -n $extra | cut -f3)
+            for tag in $tags; do
+              gh release delete ${tag} --cleanup-tag -y
+            done
+          fi
