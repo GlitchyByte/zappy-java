@@ -1,6 +1,6 @@
 # Zappy-Java
 
-![Version](https://img.shields.io/badge/Version-1.0.0-blue)
+![Version](https://img.shields.io/badge/Version-1.0.1-blue)
 ![Spec](https://img.shields.io/badge/Spec-1.1.0-cyan)
 ![Java](https://img.shields.io/badge/Java-21-orange)
 
@@ -73,7 +73,7 @@ repositories {
 }
 
 dependencies {
-    implementation("com.glitchybyte.zappy:zappy-java:1.0.0")
+    implementation("com.glitchybyte.zappy:zappy-java:1.0.1")
 }
 ```
 
