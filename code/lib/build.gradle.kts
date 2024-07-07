@@ -23,6 +23,7 @@ publishing {
     publications {
         create<MavenPublication>("Zappy") {
             from(components["java"])
+            artifactId = "zappy"
             pom {
                 name = "Zappy"
                 description = "Lightweight library for compressing and encoding web-related text (json, URLs, UUIDs, etc.) into a URL-safe format for efficient transport."
@@ -43,5 +44,5 @@ signing {
 }
 
 // Setup build info.
-group = "com.glitchybyte.zappy"
+group = "com.glitchybyte"
 version = File("../version").readLines().first().trim()

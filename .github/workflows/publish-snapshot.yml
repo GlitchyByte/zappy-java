@@ -6,7 +6,7 @@ env:
   # GRADLE_JAVA_VERSION: 17
   JAVA_VERSION: 21
   GRADLE_VERSION: 8.8
-  PROJECT_NAME: zappy
+  PROJECT_NAME: lib
   VERSION_FILE_PATH: ${{ github.workspace }}/version
 jobs:
   sanity_check:
@@ -87,7 +87,7 @@ jobs:
       - name: Clean up old snapshots
         uses: actions/delete-package-versions@v5
         with:
-          package-name: com.glitchybyte.zappy.zappy
+          package-name: com.glitchybyte.zappy
           package-type: maven
           min-versions-to-keep: 1
           delete-only-pre-release-versions: "true"
