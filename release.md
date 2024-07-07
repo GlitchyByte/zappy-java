@@ -26,7 +26,7 @@ repositories {
 }
 
 dependencies {
-    implementation("com.glitchybyte.zappy:zappy-java:1.0.1")
+    implementation("com.glitchybyte:zappy:1.0.1")
 }
 ```
 
