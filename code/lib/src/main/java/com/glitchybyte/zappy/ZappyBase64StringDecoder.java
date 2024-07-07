@@ -20,6 +20,20 @@ public class ZappyBase64StringDecoder {
         // No-op.
     }
 
+    /**
+     * Decodes a base64 string.
+     *
+     * <p>Expects encoding with "-" and "_", and no padding.
+     *
+     * @param str Base64 string.
+     * @return The decoded string.
+     * @throws ZappyParseException if it's an invalid base64 string.
+     */
+    public String base64StringDecode(final String str) throws ZappyParseException {
+        final byte[] bytes = base64AlphabetToBytes(str);
+        return new String(bytes, StandardCharsets.UTF_8);
+    }
+
     private int base64ToByte(final char chByte) throws ZappyParseException {
         if ((chByte >= 65) && (chByte <= 90)) {
             return chByte - 65;
@@ -77,19 +91,5 @@ public class ZappyBase64StringDecoder {
             start += count;
         }
         return GByteBuffer.toByteArray(base64Buffer);
-    }
-
-    /**
-     * Decodes a base64 string.
-     *
-     * <p>Expects encoding with "-" and "_", and no padding.
-     *
-     * @param str Base64 string.
-     * @return The decoded string or null.
-     * @throws ZappyParseException if it's an invalid base64 string.
-     */
-    public String base64StringDecode(final String str) throws ZappyParseException {
-        final byte[] bytes = base64AlphabetToBytes(str);
-        return new String(bytes, StandardCharsets.UTF_8);
     }
 }

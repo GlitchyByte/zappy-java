@@ -23,6 +23,16 @@ public final class GByteBuffer {
     }
 
     /**
+     * Creates a buffer wrapping the given byte array.
+     *
+     * @param bytes Byte array to seed the buffer.
+     * @return A ByteBuffer object.
+     */
+    public static ByteBuffer createWrapped(final byte[] bytes) {
+        return ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN);
+    }
+
+    /**
      * Ensures the buffer can hold the given number of bytes.
      *
      * @param buffer Source ByteBuffer.

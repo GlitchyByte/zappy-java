@@ -16,4 +16,13 @@ public class ZappyParseException extends Exception {
     public ZappyParseException(final String message) {
         super(message);
     }
+
+    /**
+     * Creates a parse exception from another exception in the process.
+     *
+     * @param cause The exception that triggered the problem.
+     */
+    public ZappyParseException(final Throwable cause) {
+        super(cause);
+    }
 }

@@ -15,54 +15,6 @@ import java.util.Map;
  */
 public final class Zappy {
 
-    /**
-     * Default contractions for Zappy.
-     *
-     * <p>It is highly recommended developers using Zappy add their own contraction tables,
-     * or even replace them completely.
-     *
-     * <p>These defaults are optimized for json messages and URLs.
-     */
-    public static final Map<Integer, String[]> defaultContractions = Map.of(
-            0, new String[] { // Up to 16 entries.
-                    "null",
-                    "true",
-                    "false",
-                    "https://",
-                    "0x",
-                    "{\"",
-                    "\"}",
-                    "\":",
-                    "\":\"",
-                    ",\"",
-                    "\",\"",
-                    "\":[",
-                    "\":[\"",
-                    "\":[{",
-                    "}]",
-                    "]}"
-            },
-            16, new String[] { // Up to 256 entries.
-                    "localhost",
-                    "127.0.0.1",
-                    "http://",
-                    "ws://",
-                    "://",
-                    ".com",
-                    ".org",
-                    ".net",
-                    ".edu",
-                    ".io",
-                    ".dev",
-                    ".gg"
-            });
-
-    static {
-        defaultContractions.forEach((key, value) -> {
-            Arrays.sort(value, (a, b) -> b.length() - a.length());
-        });
-    }
-
     private final ZappyEncoder encoder;
     private final ZappyDecoder decoder;
 
@@ -89,7 +41,7 @@ public final class Zappy {
         for (int tableId = 0; tableId <= 16; ++tableId) {
             final String[] list;
             if ((source == null) || (!source.containsKey(tableId))) {
-                list = defaultContractions.get(tableId);
+                list = ZappyDefaultContractions.defaultContractions.get(tableId);
             } else {
                 final String[] sourceList = source.get(tableId);
                 list = Arrays.stream(sourceList).sorted((a, b) -> b.length() - a.length()).toArray(String[]::new);
@@ -140,7 +92,7 @@ public final class Zappy {
      * <p>Expects encoding with "-" and "_", and no padding.
      *
      * @param str Base64 string.
-     * @return The decoded string or null.
+     * @return The decoded string.
      * @throws ZappyParseException if it's an invalid base64 string.
      */
     public String base64StringDecode(final String str) throws ZappyParseException {
@@ -161,7 +113,7 @@ public final class Zappy {
      * Turns a Zappy compressed string into a string.
      *
      * @param str A Zappy compressed string.
-     * @return Expanded string or null.
+     * @return Expanded string.
      * @throws ZappyParseException if it's an invalid Zappy string.
      */
     public String decode(final String str) throws ZappyParseException {
