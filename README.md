@@ -39,15 +39,15 @@ decoding error conditions.
 
 ```java
 // Constructor.
-Zappy(final Map<Integer, String[]> source>)
+Zappy(final Map<Integer, String[]> source>);
 
 // Base64 string encode/decode.
-String base64StringEncode(final String str)
-String base64StringDecode(final String str) throws ZappyParseException
+String base64StringEncode(final String str);
+String base64StringDecode(final String str) throws ZappyParseException;
 
 // Zappy encode/decode.
-String encode(final String str)
-String decode(final String str) throws ZappyParseException
+String encode(final String str);
+String decode(final String str) throws ZappyParseException;
 ```
 
 # How to use
