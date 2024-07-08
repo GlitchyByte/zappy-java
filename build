@@ -14,9 +14,11 @@ cd "${script_dir}"
 . ./_gcolors
 
 # [Main]
+readonly project="lib"
+
 # Clean, build, and run tests.
 cd "${script_dir}/code"
-./gradlew clean test build javadoc
+./gradlew :${project}:clean :${project}:test :${project}:build :${project}:javadoc
 if test $? -ne 0; then
   echoerr "Failure!"
   cd "${calling_dir}"
